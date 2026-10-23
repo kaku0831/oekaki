@@ -72,7 +72,7 @@ canvas{display:block;width:100%;touch-action:none}
 <h2 id="drawTitle">① プレイヤー A の絵をかこう</h2>
 <div class="name-row"><label for="fighterName">なまえ</label><input id="fighterName" maxlength="12" value="プレイヤー A"></div>
 <div class="canvas-wrap"><canvas id="drawCanvas" aria-label="お絵描きキャンバス"></canvas></div>
-<div class="tools"><button id="penBtn" class="active">✏️ ペン</button><button id="eraserBtn">消しゴム</button><button id="sizeThinBtn">細い</button><button id="sizeMidBtn" class="active">普通</button><button id="sizeBoldBtn">太い</button><label for="brushSizeRange" style="display:flex;align-items:center;gap:6px;font-size:.9rem">太さ <input id="brushSizeRange" type="range" min="1" max="30" step="0.5" value="5" style="width:130px;accent-color:#263044"><span id="brushSizeValue">5</span></label><button id="undoBtn">1つもどす</button><button id="clearBtn">ぜんぶ消す</button></div>
+<div class="tools"><button id="penBtn" class="active">✏️ ペン</button><button id="eraserBtn">消しゴム</button><button id="sizeThinBtn">細い</button><button id="sizeMidBtn" class="active">普通</button><button id="sizeBoldBtn">太い</button><button id="undoBtn">1つもどす</button><button id="clearBtn">ぜんぶ消す</button></div>
 <div class="colors">
 <button class="swatch active" data-color="#263044" style="background:#263044" aria-label="くろ"></button><button class="swatch" data-color="#ff4d6d" style="background:#ff4d6d" aria-label="あか"></button><button class="swatch" data-color="#ff9f1c" style="background:#ff9f1c" aria-label="オレンジ"></button><button class="swatch" data-color="#ffd60a" style="background:#ffd60a" aria-label="きいろ"></button><button class="swatch" data-color="#2ec4b6" style="background:#2ec4b6" aria-label="みどり"></button><button class="swatch" data-color="#3a86ff" style="background:#3a86ff" aria-label="あお"></button><button class="swatch" data-color="#8338ec" style="background:#8338ec" aria-label="むらさき"></button><button class="swatch" data-color="#ff70c5" style="background:#ff70c5" aria-label="ピンク"></button>
 <button class="swatch" data-color="#ffffff" style="background:#ffffff" aria-label="しろ"></button><button class="swatch" data-color="#8d99ae" style="background:#8d99ae" aria-label="グレー"></button><button class="swatch" data-color="#5a2a27" style="background:#5a2a27" aria-label="こげちゃ"></button><button class="swatch" data-color="#b5651d" style="background:#b5651d" aria-label="ちゃいろ"></button><button class="swatch" data-color="#ffb703" style="background:#ffb703" aria-label="やまぶき"></button><button class="swatch" data-color="#a7c957" style="background:#a7c957" aria-label="きみどり"></button><button class="swatch" data-color="#0081a7" style="background:#0081a7" aria-label="あおみどり"></button><button class="swatch" data-color="#90e0ef" style="background:#90e0ef" aria-label="みずいろ"></button><button class="swatch" data-color="#4361ee" style="background:#4361ee" aria-label="あおむらさき"></button><button class="swatch" data-color="#c77dff" style="background:#c77dff" aria-label="うすむらさき"></button><button class="swatch" data-color="#f4acb7" style="background:#f4acb7" aria-label="うすピンク"></button><button class="swatch" data-color="#9d4edd" style="background:#9d4edd" aria-label="あざやかなむらさき"></button>
@@ -167,14 +167,6 @@ function setBrushSize(size,activeId){brushSize=size;['sizeThinBtn','sizeMidBtn',
 if($('sizeThinBtn'))$('sizeThinBtn').onclick=()=>setBrushSize(2,'sizeThinBtn');
 if($('sizeMidBtn'))$('sizeMidBtn').onclick=()=>setBrushSize(5,'sizeMidBtn');
 if($('sizeBoldBtn'))$('sizeBoldBtn').onclick=()=>setBrushSize(12,'sizeBoldBtn');
-const brushSizeRange=$('brushSizeRange'),brushSizeValue=$('brushSizeValue');
-if(brushSizeRange){
- brushSizeRange.addEventListener('input',()=>{
-  brushSize=Number(brushSizeRange.value);
-  if(brushSizeValue)brushSizeValue.textContent=String(brushSize);
-  ['sizeThinBtn','sizeMidBtn','sizeBoldBtn'].forEach(id=>{if($(id))$(id).classList.remove('active');});
- });
-}
 $('undoBtn').onclick=()=>{if(history.length<=1)return;history.pop();const img=new Image();img.onload=()=>{ctx.setTransform(ratio(),0,0,ratio(),0,0);ctx.clearRect(0,0,draw.clientWidth,draw.clientHeight);ctx.clearRect(0,0,draw.clientWidth,draw.clientHeight);ctx.drawImage(img,0,0,draw.clientWidth,draw.clientHeight);};img.src=history[history.length-1];};
 $('clearBtn').onclick=()=>{snapshot();ctx.setTransform(ratio(),0,0,ratio(),0,0);ctx.clearRect(0,0,draw.clientWidth,draw.clientHeight);};
 document.querySelectorAll('.swatch').forEach(b=>b.onclick=()=>{color=b.dataset.color;erasing=false;document.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('active',x===b));$('penBtn').classList.add('active');$('eraserBtn').classList.remove('active');});
