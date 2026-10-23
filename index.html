@@ -72,7 +72,7 @@ canvas{display:block;width:100%;touch-action:none}
 <h2 id="drawTitle">① プレイヤー A の絵をかこう</h2>
 <div class="name-row"><label for="fighterName">なまえ</label><input id="fighterName" maxlength="12" value="プレイヤー A"></div>
 <div class="canvas-wrap"><canvas id="drawCanvas" aria-label="お絵描きキャンバス"></canvas></div>
-<div class="tools"><button id="penBtn" class="active">✏️ ペン</button><button id="eraserBtn">消しゴム</button><button id="sizeThinBtn">細い</button><button id="sizeMidBtn" class="active">普通</button><button id="sizeBoldBtn">太い</button><button id="undoBtn">1つもどす</button><button id="clearBtn">ぜんぶ消す</button></div>
+<div class="tools"><button id="penBtn" class="active">✏️ ペン</button><button id="eraserBtn">消しゴム</button><button id="sizeThinBtn">細い</button><button id="sizeMidBtn" class="active">普通</button><button id="sizeBoldBtn">太い</button><label for="brushSizeRange" style="display:flex;align-items:center;gap:6px;font-size:.9rem">太さ <input id="brushSizeRange" type="range" min="1" max="30" step="0.5" value="5" style="width:130px;accent-color:#263044"><span id="brushSizeValue">5</span></label><button id="undoBtn">1つもどす</button><button id="clearBtn">ぜんぶ消す</button></div>
 <div class="colors">
 <button class="swatch active" data-color="#263044" style="background:#263044" aria-label="くろ"></button><button class="swatch" data-color="#ff4d6d" style="background:#ff4d6d" aria-label="あか"></button><button class="swatch" data-color="#ff9f1c" style="background:#ff9f1c" aria-label="オレンジ"></button><button class="swatch" data-color="#ffd60a" style="background:#ffd60a" aria-label="きいろ"></button><button class="swatch" data-color="#2ec4b6" style="background:#2ec4b6" aria-label="みどり"></button><button class="swatch" data-color="#3a86ff" style="background:#3a86ff" aria-label="あお"></button><button class="swatch" data-color="#8338ec" style="background:#8338ec" aria-label="むらさき"></button><button class="swatch" data-color="#ff70c5" style="background:#ff70c5" aria-label="ピンク"></button>
 <button class="swatch" data-color="#ffffff" style="background:#ffffff" aria-label="しろ"></button><button class="swatch" data-color="#8d99ae" style="background:#8d99ae" aria-label="グレー"></button><button class="swatch" data-color="#5a2a27" style="background:#5a2a27" aria-label="こげちゃ"></button><button class="swatch" data-color="#b5651d" style="background:#b5651d" aria-label="ちゃいろ"></button><button class="swatch" data-color="#ffb703" style="background:#ffb703" aria-label="やまぶき"></button><button class="swatch" data-color="#a7c957" style="background:#a7c957" aria-label="きみどり"></button><button class="swatch" data-color="#0081a7" style="background:#0081a7" aria-label="あおみどり"></button><button class="swatch" data-color="#90e0ef" style="background:#90e0ef" aria-label="みずいろ"></button><button class="swatch" data-color="#4361ee" style="background:#4361ee" aria-label="あおむらさき"></button><button class="swatch" data-color="#c77dff" style="background:#c77dff" aria-label="うすむらさき"></button><button class="swatch" data-color="#f4acb7" style="background:#f4acb7" aria-label="うすピンク"></button><button class="swatch" data-color="#9d4edd" style="background:#9d4edd" aria-label="あざやかなむらさき"></button>
@@ -85,6 +85,7 @@ canvas{display:block;width:100%;touch-action:none}
 </div><div class="actions"><button class="secondary" id="editABtn">A をかきなおす</button><button class="secondary" id="editBBtn">B をかきなおす</button></div></section>
 <section class="battle">
 <h2>③ モンスター バトル！</h2>
+<div class="actions"><button class="secondary" id="soundBtn">効果音をON／テスト</button><span class="small" id="soundStatus">効果音：未確認</span></div>
 <div class="arena" id="arena">
 <div class="cloud" style="left:18%"></div><div class="cloud" style="right:16%;top:23%"></div><div class="hill" style="left:-25px"></div><div class="hill" style="right:-35px;height:80px"></div><div class="ground"></div>
 
@@ -167,6 +168,14 @@ function setBrushSize(size,activeId){brushSize=size;['sizeThinBtn','sizeMidBtn',
 if($('sizeThinBtn'))$('sizeThinBtn').onclick=()=>setBrushSize(2,'sizeThinBtn');
 if($('sizeMidBtn'))$('sizeMidBtn').onclick=()=>setBrushSize(5,'sizeMidBtn');
 if($('sizeBoldBtn'))$('sizeBoldBtn').onclick=()=>setBrushSize(12,'sizeBoldBtn');
+const brushSizeRange=$('brushSizeRange'),brushSizeValue=$('brushSizeValue');
+if(brushSizeRange){
+ brushSizeRange.addEventListener('input',()=>{
+  brushSize=Number(brushSizeRange.value);
+  if(brushSizeValue)brushSizeValue.textContent=String(brushSize);
+  ['sizeThinBtn','sizeMidBtn','sizeBoldBtn'].forEach(id=>{if($(id))$(id).classList.remove('active');});
+ });
+}
 $('undoBtn').onclick=()=>{if(history.length<=1)return;history.pop();const img=new Image();img.onload=()=>{ctx.setTransform(ratio(),0,0,ratio(),0,0);ctx.clearRect(0,0,draw.clientWidth,draw.clientHeight);ctx.clearRect(0,0,draw.clientWidth,draw.clientHeight);ctx.drawImage(img,0,0,draw.clientWidth,draw.clientHeight);};img.src=history[history.length-1];};
 $('clearBtn').onclick=()=>{snapshot();ctx.setTransform(ratio(),0,0,ratio(),0,0);ctx.clearRect(0,0,draw.clientWidth,draw.clientHeight);};
 document.querySelectorAll('.swatch').forEach(b=>b.onclick=()=>{color=b.dataset.color;erasing=false;document.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('active',x===b));$('penBtn').classList.add('active');$('eraserBtn').classList.remove('active');});
@@ -184,6 +193,36 @@ $('registerBtn').onclick=()=>{
  const attackPower=Math.max(5,Math.min(20,Math.round(5+areaRatio*250)));
  fighters[current]={name:$('fighterName').value.trim()||`プレイヤー ${current}`,image:normalized.toDataURL('image/png'),attackPower};try{localStorage.setItem('oekakiMonsterBattle',JSON.stringify(fighters));}catch(e){$('drawHint').textContent='保存容量がいっぱいです。';}updateSaved(current);if(current==='A'){setEditor('B');$('drawHint').textContent='Aの登録OK！つぎはBをかこう。';}else{$('drawHint').textContent='Bの登録OK！バトル開始！';$('result').textContent='準備OK！バトル開始を押してね。';}};
 $('editABtn').onclick=()=>setEditor('A');$('editBBtn').onclick=()=>setEditor('B');
+// 効果音：音声再生はユーザーがボタンを押した操作内で有効化する。
+let gameAudio=null;
+async function enableGameAudio(){
+ const AC=window.AudioContext||window.webkitAudioContext;
+ if(!AC) throw new Error('このブラウザは音声生成に対応していません');
+ if(!gameAudio) gameAudio=new AC();
+ if(gameAudio.state!=='running') await gameAudio.resume();
+ if(gameAudio.state!=='running') throw new Error('音声が有効になりませんでした');
+ return gameAudio;
+}
+function gameSound(type){
+ if(!gameAudio||gameAudio.state!=='running') return;
+ const ac=gameAudio,t=ac.currentTime;
+ const beep=(f1,f2,d,wave='triangle',vol=.16,delay=0)=>{
+  const o=ac.createOscillator(),g=ac.createGain();
+  o.type=wave;o.frequency.setValueAtTime(f1,t+delay);
+  if(f1!==f2)o.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t+delay+d);
+  g.gain.setValueAtTime(.0001,t+delay);g.gain.exponentialRampToValueAtTime(vol,t+delay+.01);g.gain.exponentialRampToValueAtTime(.0001,t+delay+d);
+  o.connect(g);g.connect(ac.destination);o.start(t+delay);o.stop(t+delay+d+.03);
+ };
+ if(type==='transform'){beep(180,420,.35,'sawtooth',.12);beep(300,850,.42,'triangle',.13,.12);beep(500,1000,.25,'sine',.12,.3);}
+ else if(type==='attack'){beep(190,55,.18,'sawtooth',.22);beep(700,160,.10,'square',.1,.015);}
+ else if(type==='win'){beep(523,523,.16,'triangle',.14);beep(659,659,.16,'triangle',.14,.17);beep(784,784,.18,'triangle',.14,.34);beep(1047,1047,.36,'triangle',.16,.53);}
+ else if(type==='draw'){beep(280,180,.25,'sine',.12);beep(220,130,.32,'triangle',.11,.2);}
+}
+$('soundBtn').addEventListener('click',async()=>{
+ const status=$('soundStatus');
+ try{await enableGameAudio();gameSound('attack');status.textContent='効果音：ON（テスト音を再生しました）';}
+ catch(e){status.textContent='効果音を有効にできません。端末の消音・音量を確認してください。';}
+});
 function updateHp(side){const hp=battleState.hp[side],max=battleState.maxHp,fill=$('hpFill'+side);$('hpLabel'+side).textContent=`${fighters[side].name} HP ${Math.max(0,hp)}`;fill.style.width=`${Math.max(0,hp)/max*100}%`;fill.style.background=hp>max*.55?'#5cdb75':hp>max*.25?'#ffd85b':'#ff5368';}
 function clearBattle(){if(battleTimer){clearInterval(battleTimer);battleTimer=null;}['unitA','unitB'].forEach(id=>$(id).classList.remove('damage','attack-a','attack-b','victory','transforming','evolved','power-attack','knockback'));$('arena').classList.remove('flash');$('hitText').classList.remove('power');$('hitText').classList.remove('show');}
 function resetBattle(){clearBattle();if(!(fighters.A&&fighters.B))return;const arena=$('arena'),w=arena.clientWidth;const firstAttacker=Math.random()<0.5?'A':'B';battleState={hp:{A:100,B:100},maxHp:100,pos:{A:w*.17,B:w*.83},lastAttack:{A:firstAttacker==='A'?0:3,B:firstAttacker==='B'?0:3},tick:0,done:false,firstAttacker};$('unitA').style.left='17%';$('unitA').style.right='auto';$('unitB').style.right='17%';$('unitB').style.left='auto';$('unitA').style.transform='';$('unitB').style.transform='';updateHp('A');updateHp('B');$('battleStatus').textContent='モンスターが出撃！相手にむかって進むよ！';$('result').textContent='バトル中！';$('battleBtn').disabled=true;$('resetBattleBtn').disabled=false;
@@ -198,6 +237,7 @@ const close=s.pos.B-s.pos.A<unitWidth*.95;
 
 if(close&&!s.transformed){
  s.transformed=true;
+ gameSound('transform');
  ['A','B'].forEach(side=>{$('unit'+side).classList.add('transforming');$('unit'+side).classList.remove('flip-spin');void $('unit'+side).offsetWidth;$('unit'+side).classList.add('flip-spin');});
  $('battleStatus').textContent='モンスターが パワーアップ！';
  showHit('へんしん！');$('hitText').classList.add('power');$('arena').classList.add('flash');
@@ -214,13 +254,13 @@ if(close){
    const damage=Math.max(5,Math.min(20,Math.round(fighters[side].attackPower??10)));
    $('unit'+side).classList.remove('attack-a','attack-b');void $('unit'+side).offsetWidth;$('unit'+side).classList.add(side==='A'?'attack-a':'attack-b');
    $('unit'+target).classList.remove('damage');void $('unit'+target).offsetWidth;$('unit'+target).classList.add('damage');
-   s.hp[target]=Math.max(0,s.hp[target]-damage);updateHp(target);showHit(`ドカッ！ -${damage}`);
+   s.hp[target]=Math.max(0,s.hp[target]-damage);updateHp(target);gameSound('attack');showHit(`ドカッ！ -${damage}`);
    $('battleStatus').textContent=`${fighters[side].name} のこうげき！`;
    if(s.hp[target]===0){finishBattle(side,target);return;}
   }
  }
 }}
-function finishBattle(winner,loser){if(!battleState)return;battleState.done=true;if(battleTimer){clearInterval(battleTimer);battleTimer=null;}if(winner==='draw'){$('battleStatus').textContent='両方のモンスターがたおれた！';$('result').textContent='ひきわけ！';}else{$('unit'+winner).classList.add('victory');$('battleStatus').textContent=`${fighters[loser].name} がたおれた！`;$('result').textContent=`🏆 ${fighters[winner].name} の かち！`;}$('battleBtn').disabled=false;$('battleBtn').textContent='もういちどバトル！';}
+function finishBattle(winner,loser){if(!battleState)return;battleState.done=true;gameSound(winner==='draw'?'draw':'win');if(battleTimer){clearInterval(battleTimer);battleTimer=null;}if(winner==='draw'){$('battleStatus').textContent='両方のモンスターがたおれた！';$('result').textContent='ひきわけ！';}else{$('unit'+winner).classList.add('victory');$('battleStatus').textContent=`${fighters[loser].name} がたおれた！`;$('result').textContent=`🏆 ${fighters[winner].name} の かち！`;}$('battleBtn').disabled=false;$('battleBtn').textContent='もういちどバトル！';}
 $('battleBtn').onclick=()=>{if(!(fighters.A&&fighters.B))return;clearBattle();$('battleBtn').textContent='バトル中…';resetBattle();};
 $('resetBattleBtn').onclick=()=>{clearBattle();$('battleBtn').textContent='バトル開始！';resetBattle();};
 $('resetBattleBtn').disabled=true;
